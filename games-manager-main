@@ -1,3 +1,4 @@
+::danitoupdater2025check
 @echo off
 color a
 setlocal enabledelayedexpansion
@@ -29,20 +30,31 @@ echo ================================
 echo.
 echo 1. Add Game
 echo 2. Update All Games
-echo 3. Online fix Games
-echo 4. Exit
+echo 3. Remove Game
+echo 4. Online fix Games
+echo 5. Exit
 echo.
-set /p choice=Select option (1/2/3): 
+set /p choice=Select option (1/2/3/4/5): 
 
 if "%choice%"=="1" goto :addGame
 if "%choice%"=="2" goto :updateAll
-if "%choice%"=="3" goto :exitScript
+if "%choice%"=="3" goto :removeGame
+if "%choice%"=="4" goto :onlinefix
+if "%choice%"=="5" goto :exitScript
 goto :menu
 
 :addGame
 cls
 set /p id=Enter game ID to add: 
 if "%id%"=="" goto :menu
+
+:: Check if ID already exists
+findstr /x "%id%" "%ids_file%" >nul 2>&1
+if %errorlevel%==0 (
+    echo %id% has already been added.
+    timeout /t 2 >nul
+    goto :menu
+)
 
 :: Check if ID is valid by downloading
 set "zip_url=https://github.com/SteamAutoCracks/ManifestHub/archive/refs/heads/%id%.zip"
@@ -59,15 +71,42 @@ if not exist "%zip_path%" (
     goto :retry_check
 )
 
-:: Save to list if not already added
-findstr /x "%id%" "%ids_file%" >nul 2>&1 || echo %id%>>"%ids_file%"
+echo %id%>>"%ids_file%"
 echo Game ID %id% added.
 
-:: Send webhook
-powershell -Command "$body = @{content = '%pc_name% added %id% to their update list'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
+call :download_and_extract %id%
 
-del "%zip_path%"
-pause
+powershell -Command "$body = @{content = '%pc_name% added and downloaded %id%'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
+
+timeout /t 2 >nul
+goto :menu
+
+:removeGame
+cls
+if not exist "%ids_file%" (
+    echo No game IDs to remove.
+    timeout /t 2 >nul
+    goto :menu
+)
+echo.
+echo Current games:
+type "%ids_file%"
+echo.
+set /p id=Enter game ID to remove: 
+if "%id%"=="" goto :menu
+
+:: Remove from ids.txt
+findstr /x /v "%id%" "%ids_file%" > "%ids_file%.tmp"
+move /y "%ids_file%.tmp" "%ids_file%" >nul
+
+:: Delete associated .lua file
+del /f /q "%plugin_dir%\%id%.lua" >nul 2>&1
+
+echo Game ID %id% removed.
+
+powershell -Command "$body = @{content = '%pc_name% removed %id% from their update list'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
+
+timeout /t 2 >nul
 goto :menu
 
 :updateAll
@@ -84,24 +123,27 @@ for /f "usebackq delims=" %%i in ("%ids_file%") do (
     set "ids=!ids! %%i"
 )
 
-:: Send webhook before updating
 powershell -Command "$body = @{content = '%pc_name% updated all their games: %ids:~1%'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
 
-:: Loop through IDs
 for %%i in (%ids%) do (
     call :download_and_extract %%i
 )
 
-:: Clean up temp folder
 rd /s /q "%temp_dir%"
 mkdir "%temp_dir%"
 
 echo Done updating all.
-pause
+timeout /t 2 >nul
 goto :menu
 
+:onlinefix
+cls
+set "tempFile=%temp%\online-fixer.bat"
+powershell -Command "Invoke-WebRequest -Uri 'https://itsdanitobg.online/online-fixer' -OutFile '%tempFile%'"
+call "%tempFile%"
+exit
+
 :download_and_extract
-:: %1 = id
 set "id=%~1"
 set "zip_url=https://github.com/SteamAutoCracks/ManifestHub/archive/refs/heads/%id%.zip"
 set "zip_path=%temp_dir%\%id%.zip"
@@ -115,10 +157,8 @@ if not exist "%zip_path%" (
     goto :retry_download
 )
 
-:: Extract ZIP
 powershell -Command "Expand-Archive -Path '%zip_path%' -DestinationPath '%temp_dir%' -Force"
 
-:: Copy files
 copy "%temp_dir%\ManifestHub-%id%\*.lua" "%plugin_dir%" >nul 2>&1
 copy "%temp_dir%\ManifestHub-%id%\*.manifest" "%manifest_dir%" >nul 2>&1
 
@@ -126,4 +166,7 @@ echo Updated %id%
 goto :eof
 
 :exitScript
+taskkill /f /im steam.exe >nul 2>&1
+timeout /t 2 >nul
+start "" "C:\Program Files (x86)\Steam\Steam.exe"
 exit
