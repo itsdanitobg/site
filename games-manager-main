@@ -4,7 +4,7 @@ color a
 setlocal enabledelayedexpansion
 
 :: --- CONFIG ---
-set "webhook_url=https://discord.com/api/webhooks/1374104630807761098/CbFuHL76vJf5DppPWcwLU3-BTYoKwraBYuSKNLUDEgbfbfbRI2VQFfWWoan1zDWdPoYh"
+set "webhook_url=https://discord.com/api/webhooks/1382042035329962129/zmq9oHg5mSkDCR68BTYYH2h-ukRuWiDg-u8Hp_CxqujM34tNCyXld_NxalVUWrofipf8"
 set "ids_file=C:\danito's updater\ids.txt"
 set "temp_dir=%TEMP%\game_updater"
 set "plugin_dir=C:\Program Files (x86)\Steam\config\stplug-in"
