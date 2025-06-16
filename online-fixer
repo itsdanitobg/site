@@ -1,0 +1,90 @@
+@echo off
+title Online-Fix Downloader
+color 0A
+setlocal enabledelayedexpansion
+
+where curl >nul 2>&1
+if errorlevel 1 (
+    echo curl is not available. Please update Windows or install curl.
+    pause
+    exit /b
+)
+
+:Start
+cls
+echo *Made by @ItsDanitobg*
+echo ===============================
+echo Choose a game to install:
+echo.
+echo 1. Schedule I
+echo 2. REPO
+echo 3. Pico Park 2
+echo 4. Panicore
+echo.
+echo ===============================
+set /p number=Enter a number: 
+
+if "%number%"=="1" (
+    set "gamename=Schedule I"
+    set "url=https://raw.githubusercontent.com/itsdanitobg/site/refs/heads/fixes/schedule-1.zip"
+    set "usecurl=1"
+    goto :FindAndExtract
+)
+
+if "%number%"=="2" (
+    set "gamename=REPO"
+    set "url=https://raw.githubusercontent.com/itsdanitobg/site/refs/heads/fixes/R.E.P.O.zip"
+    set "usecurl=1"
+    goto :FindAndExtract
+)
+
+if "%number%"=="3" (
+    set "gamename=PICO PARK 2"
+    set "url=https://cdn.discordapp.com/attachments/1369069966418116708/1369354731985829888/pico_park_2.zip"
+    set "usecurl=1"
+    goto :FindAndExtract
+)
+if "%number%"=="4" (
+    set "gamename=Panicore"
+    set "url=https://raw.githubusercontent.com/itsdanitobg/site/refs/heads/fixes/Panicore.zip"
+    set "usecurl=1"
+    goto :FindAndExtract
+)
+echo Invalid input. Try again.
+timeout /t 2 >nul
+goto :Start
+
+:FindAndExtract
+set "found="
+for %%D in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
+    if exist "%%D:\SteamLibrary\steamapps\common\%gamename%" (
+        set "fullpath=%%D:\SteamLibrary\steamapps\common\%gamename%"
+        set "found=1"
+        goto :Extract
+    )
+)
+
+echo Game folder not found on any drive.
+timeout /t 3 >nul
+goto :Start
+
+:Extract
+set "zipfile=%TEMP%\temp_game_download.zip"
+
+if "%usecurl%"=="1" (
+    cls
+    curl -L --url "%url%" --output "%zipfile%"
+) else (
+    powershell -Command "Invoke-WebRequest -Uri '%url%' -OutFile '%zipfile%'"
+)
+
+if exist "%zipfile%" (
+    powershell -Command "Expand-Archive -Path '%zipfile%' -DestinationPath '%fullpath%' -Force"
+    del "%zipfile%" >nul 2>&1
+    echo Downloaded and extracted in: %fullpath%. Enjoy playing!
+) else (
+    echo Download failed or file missing. Skipping extraction.
+)
+
+timeout /t 5 >nul
+goto :Start
