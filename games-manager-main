@@ -57,7 +57,7 @@ if %errorlevel%==0 (
 )
 
 :: Check if ID is valid by downloading
-set "zip_url=https://github.com/SteamAutoCracks/ManifestHub/archive/refs/heads/%id%.zip"
+set "zip_url=https://github.com/KunalR31/manifest/archive/refs/heads/%id%.zip"
 set "zip_path=%temp_dir%\%id%.zip"
 
 echo.
