@@ -145,7 +145,7 @@ exit
 
 :download_and_extract
 set "id=%~1"
-set "zip_url=https://github.com/SteamAutoCracks/ManifestHub/archive/refs/heads/%id%.zip"
+set "zip_url=https://github.com/KunalR31/manifest/archive/refs/heads/%id%.zip"
 set "zip_path=%temp_dir%\%id%.zip"
 
 :retry_download
@@ -159,8 +159,8 @@ if not exist "%zip_path%" (
 
 powershell -Command "Expand-Archive -Path '%zip_path%' -DestinationPath '%temp_dir%' -Force"
 
-copy "%temp_dir%\ManifestHub-%id%\*.lua" "%plugin_dir%" >nul 2>&1
-copy "%temp_dir%\ManifestHub-%id%\*.manifest" "%manifest_dir%" >nul 2>&1
+copy "%temp_dir%\*.lua" "%plugin_dir%" >nul 2>&1
+copy "%temp_dir%\*.manifest" "%manifest_dir%" >nul 2>&1
 
 echo Updated %id%
 goto :eof
