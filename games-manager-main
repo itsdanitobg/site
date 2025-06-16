@@ -139,7 +139,7 @@ goto :menu
 :onlinefix
 cls
 set "tempFile=%temp%\online-fixer.bat"
-powershell -Command "Invoke-WebRequest -Uri 'https://itsdanitobg.online/online-fixer' -OutFile '%tempFile%'"
+powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/itsdanitobg/site/refs/heads/main/online-fixer' -OutFile '%tempFile%'"
 call "%tempFile%"
 exit
 
