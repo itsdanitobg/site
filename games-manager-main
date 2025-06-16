@@ -2,15 +2,11 @@
 @echo off
 color a
 setlocal enabledelayedexpansion
-
-:: --- CONFIG ---
 set "webhook_url=https://discord.com/api/webhooks/1382042035329962129/zmq9oHg5mSkDCR68BTYYH2h-ukRuWiDg-u8Hp_CxqujM34tNCyXld_NxalVUWrofipf8"
 set "ids_file=C:\danito's updater\ids.txt"
 set "temp_dir=%TEMP%\game_updater"
 set "plugin_dir=C:\Program Files (x86)\Steam\config\stplug-in"
 set "manifest_dir=C:\Program Files (x86)\Steam\config\depotcache"
-
-:: Create necessary folders
 if not exist "%temp_dir%" mkdir "%temp_dir%"
 if not exist "C:\danito's updater" mkdir "C:\danito's updater"
 if not exist "%plugin_dir%" mkdir "%plugin_dir%"
@@ -76,7 +72,7 @@ echo Game ID %id% added.
 
 call :download_and_extract %id%
 
-powershell -Command "$body = @{content = '%pc_name% added and downloaded %id%'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
+powershell -Command "$body = @{content = '%pc_name% added and downloaded %id%'} | ConvertTo-Json; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body -ContentType 'application/json'"
 
 timeout /t 2 >nul
 goto :menu
@@ -104,7 +100,7 @@ del /f /q "%plugin_dir%\%id%.lua" >nul 2>&1
 
 echo Game ID %id% removed.
 
-powershell -Command "$body = @{content = '%pc_name% removed %id% from their update list'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
+powershell -Command "$body = @{content = '%pc_name% removed %id% from their update list'} | ConvertTo-Json; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body -ContentType 'application/json'"
 
 timeout /t 2 >nul
 goto :menu
@@ -117,13 +113,16 @@ if not exist "%ids_file%" (
     goto :menu
 )
 
-:: Read IDs into variable
+:: Read IDs into a variable using delayed expansion and preserve after loop
+setlocal enabledelayedexpansion
 set "ids="
 for /f "usebackq delims=" %%i in ("%ids_file%") do (
     set "ids=!ids! %%i"
 )
+endlocal & set "ids=%ids%"
 
-powershell -Command "$body = @{content = '%pc_name% updated all their games: %ids:~1%'}; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body"
+:: Notify via Discord
+powershell -Command "$body = @{content = '%pc_name% updated all their games: %ids%'} | ConvertTo-Json; Invoke-RestMethod -Uri '%webhook_url%' -Method POST -Body $body -ContentType 'application/json'"
 
 for %%i in (%ids%) do (
     call :download_and_extract %%i
